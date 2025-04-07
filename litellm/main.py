@@ -3054,7 +3054,7 @@ def completion(  # type: ignore # noqa: PLR0915
                 }
             )
 
-            """
+            
             prompt = " ".join([message["content"] for message in messages])  # type: ignore
             resp = litellm.module_level_client.post(
                 url,
@@ -3070,7 +3070,7 @@ def completion(  # type: ignore # noqa: PLR0915
                 },
             )
             response_json = resp.json()
-            """
+            
             assume all responses from custom api_bases of this format:
             {
                 'data': [
@@ -3083,7 +3083,25 @@ def completion(  # type: ignore # noqa: PLR0915
                 ]
             }
             """
-            string_response = response_json["data"][0]["output"][0]
+
+            
+            # Bithin: updated the module_level_client with passing the header variable
+
+            headers.update({"Authorization": "Bearer "+api_key+""})
+            response = litellm.module_level_client.post(url,
+                json={
+                    "model": model,
+                    "messages": messages,
+                },
+                headers=headers,
+            )
+
+           # Bithin: updated the response to obtained the content, this has to be customized 
+           # based on the specific API response. 
+
+            response_string = response.json()
+            string_response = response_string["choices"][0]["message"]['content']
+
             ## RESPONSE OBJECT
             model_response.choices[0].message.content = string_response  # type: ignore
             model_response.created = int(time.time())
@@ -3653,7 +3671,7 @@ def embedding(  # noqa: PLR0915
                 model_response=EmbeddingResponse(),
                 optional_params=optional_params,
                 client=client,
-                aembedding=aembedding,
+                #aembedding=aembedding,
                 litellm_params={},
             )
         elif custom_llm_provider == "gemini":
@@ -3673,7 +3691,7 @@ def embedding(  # noqa: PLR0915
                 vertex_project=None,
                 vertex_location=None,
                 vertex_credentials=None,
-                aembedding=aembedding,
+                #aembedding=aembedding,
                 print_verbose=print_verbose,
                 custom_llm_provider="gemini",
                 api_key=gemini_api_key,
@@ -3728,7 +3746,7 @@ def embedding(  # noqa: PLR0915
                     vertex_project=vertex_ai_project,
                     vertex_location=vertex_ai_location,
                     vertex_credentials=vertex_credentials,
-                    aembedding=aembedding,
+                    #aembedding=aembedding,
                     print_verbose=print_verbose,
                     custom_llm_provider="vertex_ai",
                     client=client,
@@ -3747,7 +3765,7 @@ def embedding(  # noqa: PLR0915
                     vertex_credentials=vertex_credentials,
                     custom_llm_provider="vertex_ai",
                     timeout=timeout,
-                    aembedding=aembedding,
+                    #aembedding=aembedding,
                     print_verbose=print_verbose,
                     api_key=api_key,
                     api_base=api_base,
@@ -3846,7 +3864,7 @@ def embedding(  # noqa: PLR0915
                 model_response=EmbeddingResponse(),
                 optional_params=optional_params,
                 client=client,
-                aembedding=aembedding,
+                aembedding=aembedding, # type: ignore
                 litellm_params={},
             )
         elif custom_llm_provider == "watsonx":
@@ -3872,7 +3890,7 @@ def embedding(  # noqa: PLR0915
                 optional_params=optional_params,
                 litellm_params={},
                 client=client,
-                aembedding=aembedding,
+                aembedding=aembedding, # type: ignore
             )
         elif custom_llm_provider == "xinference":
             api_key = (
@@ -4918,7 +4936,7 @@ def image_variation(
             api_base=api_base,
             model=model,
             image=image,
-            timeout=litellm_params.get("timeout", None),
+            timeout=litellm_params.get("timeout", None), # type: ignore
             custom_llm_provider=custom_llm_provider,
             logging_obj=litellm_logging_obj,
             optional_params={},
@@ -4936,7 +4954,7 @@ def image_variation(
             api_base=api_base,
             model=model,
             image=image,
-            timeout=litellm_params.get("timeout", None),
+            timeout=litellm_params.get("timeout", None), # type: ignore
             custom_llm_provider=custom_llm_provider,
             logging_obj=litellm_logging_obj,
             optional_params={},
@@ -5290,7 +5308,7 @@ def speech(  # noqa: PLR0915
         max_retries = litellm.num_retries or openai.DEFAULT_MAX_RETRIES
     litellm_params_dict = get_litellm_params(**kwargs)
     logging_obj = kwargs.get("litellm_logging_obj", None)
-    logging_obj.update_environment_variables(
+    logging_obj.update_environment_variables( # type: ignore
         model=model,
         user=user,
         optional_params={},
